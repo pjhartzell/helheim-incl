@@ -3,7 +3,6 @@ import glob
 import os
 import numpy as np
 import pdal
-import matplotlib.pyplot as plt
 
 
 def get_socs(filename):
@@ -59,7 +58,8 @@ def get_incl(filename):
 
 
 def filter_incl(incl, kernel_length=101):
-    # Blackman window kernel
+    # Blackman window kernel. Default kernel length based on prior work
+    # published in Journal of Glaciology.
     kernel = np.blackman(kernel_length)
     kernel = kernel / np.sum(kernel)
     # Pad roll and pitch signals
@@ -113,9 +113,6 @@ def save_socs(filename, t, x, y, z):
     out['Y'] = y
     out['Z'] = z
 
-    # root, ext = os.path.splitext(filename)
-    # outfilename = root + "-SOCS" + ext
-
     pdal_pipe = [
         {
             "type":"writers.las",
@@ -126,30 +123,4 @@ def save_socs(filename, t, x, y, z):
     p = pdal.Pipeline(json=json.dumps(pdal_pipe), arrays=[out,])
     p.validate()
     p.execute()
-
-
-# Script
-laz_dir = "/mnt/e/ATLAS/south_200501-200515/laz"
-incl_dir = "/mnt/e/ATLAS/south_200501-200515/rxp/mta"
-
-laz_files = [f for f in os.listdir(laz_dir) if f.endswith(".laz")]
-
-for laz_file in laz_files:
-    laz_file = laz_dir + "/" + laz_file
-    print("Applying inclination to {}".format(laz_file))
-
-    root, ext = os.path.splitext(os.path.basename(laz_file))
-    incl_file = incl_dir + "/" + root + "-incl.txt"
-
-    pt, x, y, z = get_socs(laz_file)
-    it, roll, pitch = get_incl(incl_file)
-
-    filtered_roll = filter_incl(roll, 101)
-    filtered_pitch = filter_incl(pitch, 101)
-
-    xr, yr, zr = apply_incl(pt, x, y, z, it, filtered_roll, filtered_pitch)
-
-    root, ext = os.path.splitext(laz_file)
-    outfilename = root + "-socs-incl_applied" + ext
-    save_socs(outfilename, pt, xr, yr, zr)
 
