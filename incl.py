@@ -28,7 +28,7 @@ def get_socs(filename):
             "matrix":"0.4560212389547335 -0.8899688924677321 -0.0000078707114301 830.9795317677513 0.8899669318671532 0.4560202157410177 0.0021030973542710 -3931.5277531064141 -0.0018681020196080 -0.0009660617340401 0.9999977884573395 512.8759432302256 0.0 0.0 0.0 1.0",
             "invert":"true"
         },
-        outfilename
+        # outfilename
     ]
     p = pdal.Pipeline(json.dumps(pdal_pipe))
     p.validate()
@@ -124,3 +124,12 @@ def save_socs(filename, t, x, y, z):
     p.validate()
     p.execute()
 
+
+def get_phi(it, pt, x, y):
+    # Horizontal angle in SOCS of points closest to inclination reading times
+    phi = []
+    for t in it:
+        idx = (np.abs(pt - t)).argmin()
+        phi.append(np.rad2deg(np.arctan2(y[idx], x[idx])))
+
+    return phi

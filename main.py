@@ -3,7 +3,7 @@ from incl import *
 
 
 # User entry
-laz_dir = "/mnt/e/ATLAS/south_200501-200515/laz"
+laz_dir = "/mnt/e/ATLAS/south_200501-200515/laz/test"
 incl_dir = "/mnt/e/ATLAS/south_200501-200515/rxp/mta"
 plot_incl = True
 
