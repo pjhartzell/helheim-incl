@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 from incl import *
 
+
 # User entry
-laz_dir = "/mnt/e/ATLAS/south_200501-200515/laz/test"
+laz_dir = "/mnt/e/ATLAS/south_200501-200515/laz"
 incl_dir = "/mnt/e/ATLAS/south_200501-200515/rxp/mta"
 plot_incl = True
 
@@ -27,13 +28,18 @@ for laz_file in laz_files:
 
     #  Plot raw and filtered inclination data, if desired
     if plot_incl:
-        fig, (ax1, ax2) = plt.subplots(2)
-        ax1.plot(roll, 'b')
-        ax1.plot(filtered_roll, 'r')
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.plot(roll, 'b', label='Raw')
+        ax1.plot(filtered_roll, 'r', label='Filtered')
+        ax1.set_xlabel('time (s)')
+        ax1.set_ylabel('inclination (deg)')
         ax1.set_title('Roll')
         ax2.plot(pitch, 'b')
         ax2.plot(filtered_pitch, 'r')
+        ax2.set_xlabel('time (s)')
+        ax2.set_ylabel('inclination (deg)')
         ax2.set_title('Pitch')
+        ax1.legend()
         plt.show()
 
     # Apply filtered inclination to point data in SOCS frame
