@@ -128,8 +128,12 @@ def save_socs(filename, t, x, y, z):
 def get_phi(it, pt, x, y):
     # Horizontal angle in SOCS of points closest to inclination reading times
     phi = []
-    for t in it:
-        idx = (np.abs(pt - t)).argmin()
-        phi.append(np.rad2deg(np.arctan2(y[idx], x[idx])))
+    idx = np.searchsorted(pt, it)
+    for i in idx:
+        phi.append(np.rad2deg(np.arctan2(y[i], x[i])))
+
+    # for t in it:
+    #     idx = (np.abs(pt - t)).argmin()
+    #     phi.append(np.rad2deg(np.arctan2(y[idx], x[idx])))
 
     return phi

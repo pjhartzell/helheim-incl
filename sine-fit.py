@@ -21,16 +21,20 @@ for laz_file in laz_files:
     pt, x, y, z = get_socs(laz_file)
     it, roll, pitch = get_incl(incl_file)
 
-    ax1.plot(pt)
-    ax2.plot(it)
-    plt.show()
+    # Filter inclination data
+    filtered_roll = filter_incl(roll, 801)
+    filtered_pitch = filter_incl(pitch, 801)
+
+    # ax1.plot(pt)
+    # ax2.plot(it)
+    # plt.show()
 
     # Get phi for each inclination time
     phi = get_phi(it, pt, x, y)
 
     # Plot
-    ax1.plot(phi, roll)
-    ax2.plot(phi, pitch)
+    ax1.plot(phi, filtered_roll)
+    ax2.plot(phi, filtered_pitch)
 
 ax1.set_title("Roll")
 ax2.set_title("Pitch")
