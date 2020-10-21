@@ -4,7 +4,7 @@ Some scripts to apply inclination values to the Helheim TLS data.
 ## Use
 You will need a directory of MTA'd RXP files and a directory of corresponding final, filtered LAZ files.
 
-1. Build and install Pete's [rivlib-utils](https://github.com/gadomski/rivlib-utils) on your machine.
+1. Build and install Pete's [rivlib-utils](https://github.com/gadomski/rivlib-utils) on your machine. You will need to change the `false` argument to `true` on line #10 in the source file `inclination.cpp`. This changes the timestamps from internal time to GPS time.
 2. Run the `rxp2incl.sh` script to extract inclination data from the MTA'd RXP files for the data you want to correct. You will need to edit the location of the RXP directory in the script. Text files containing time, roll, and pitch (units are internal time seconds and degrees) will be saved into the RXP directory with "-incl" appended to the source RXP filenames.
 3. Run the `main.py` script to apply the inclination data to the point cloud data. You will need to edit the directory paths for the LAZ and inclination data. LAZ files of the point cloud data in the SOCS frame and corrected (for inclination) SOCS frame will be saved into the LAZ directory with "-socs" and "-socs-incl_applied" appended to the source LAZ filenames.
 

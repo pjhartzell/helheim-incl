@@ -5,7 +5,7 @@ from incl import *
 # User entry
 laz_dir = "/mnt/e/ATLAS/south_200501-200515/laz"
 incl_dir = "/mnt/e/ATLAS/south_200501-200515/rxp/mta"
-plot_incl = True
+plot_incl = False
 
 # The work
 laz_files = [f for f in os.listdir(laz_dir) if f.endswith(".laz")]
