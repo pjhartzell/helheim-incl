@@ -104,6 +104,7 @@ dependencies:
   - python_abi=3.8=1_cp38
   - qt=5.12.9=h1f2b2cb_0
   - readline=8.0=he28a2e2_2
+  - scipy=1.5.2=py38hd648e70_2
   - setuptools=49.6.0=py38h924ce5b_2
   - six=1.15.0=pyh9f0ad1d_0
   - sqlite=3.33.0=h4cf870e_1
