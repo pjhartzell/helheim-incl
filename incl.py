@@ -195,6 +195,31 @@ def save_pnts(filename, t, x, y, z):
     p.execute()
 
 
+def save_utm(filename, t, x, y, z):
+    out_type = np.dtype([('GpsTime', t.dtype), ('X', x.dtype), ('Y', y.dtype), ('Z', z.dtype)])
+    out = np.empty(len(t), dtype=out_type)
+    out['GpsTime'] = t
+    out['X'] = x
+    out['Y'] = y
+    out['Z'] = z
+
+    pdal_pipe = [
+        {
+            "type":"filters.reprojection",
+            "in_srs":"EPSG:7789",
+            "out_srs":"EPSG:32624"
+        },
+        {
+            "type":"writers.las",
+            "filename":filename
+        }
+    ]
+
+    p = pdal.Pipeline(json=json.dumps(pdal_pipe), arrays=[out,])
+    p.validate()
+    p.execute()
+
+
 def get_phi(it, pt, x, y):
     # Get the horizontal angle in SOCS of points closest in time to the 
     # inclination reading times
@@ -255,3 +280,24 @@ def plot_incl_time(t, roll, pitch, filtered_roll, filtered_pitch):
     ax1.grid()
     ax2.grid()
     plt.show()
+
+
+def remove_reg_mean_incl(roll, pitch, reg_incl_file):
+    _, reg_roll, reg_pitch = get_incl(reg_incl_file)
+
+    roll = roll - np.mean(reg_roll)
+    pitch = pitch - np.mean(reg_pitch)
+
+    return roll, pitch
+
+
+def sop_pop_cloud(x, y, z, mat_file):
+    mat = np.loadtxt(mat_file, delimiter=" ")
+    xyz1 = np.vstack((x, y, z, np.ones(len(x))))
+    xyz_rot = (mat @ xyz1).T
+
+    x_rot = xyz_rot[:,0]
+    y_rot = xyz_rot[:,1]
+    z_rot = xyz_rot[:,2]
+
+    return x_rot, y_rot, z_rot
