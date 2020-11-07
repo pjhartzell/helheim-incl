@@ -1,5 +1,5 @@
 # Helheim Inclination 
-Some hacks to apply scanner inclination data to ATLAS North and South.
+Some scripts to apply scanner inclination data, in a variety of ways, to ATLAS North and South point clouds. There are currently 5 options for transforming MTA data
 
 ## Notes
 1. Roll and pitch rotations, which are generated from noise-filtered scanner roll and pitch inclination values, are applied to scan points in the SOCS system. The inclination values nearest in time to each point are used; thus, the adjustment is non-rigid. The rotation definitions are found in any Riegl TLS User Manual.

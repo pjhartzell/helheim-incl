@@ -111,7 +111,7 @@ def filter_incl(incl, kernel_length=101):
     return filtered_incl
 
 
-def rotate_cloud(x, y, z, it, roll, pitch, mode):
+def rotate_cloud(x, y, z, roll, pitch, mode):
     if mode == 'center':
         # Grab roll and pitch values at center time
         center_idx = np.int(len(roll)/2)
@@ -221,14 +221,22 @@ def save_utm(filename, t, x, y, z):
 
 
 def get_phi(it, pt, x, y):
-    # Get the horizontal angle in SOCS of points closest in time to the 
-    # inclination reading times
+    # Near field points cause odd phi solutions
+    mask = np.sqrt(x**2 + y**2) > 100
+    pt = pt[mask]
+    x = x[mask]
+    y = y[mask]
+
+    # Indices of closest points in time to the inclination reading times
     idx = np.searchsorted(pt, it)
+
     # Handle any out of bound indices on the high side
     idx[idx >= len(pt)] -= 1
+
+    # Angle in xy plane
     phi = np.arctan2(y[idx], x[idx])
 
-    return phi
+    return np.asarray(phi)
 
 
 def model(phi, a, c, d):
@@ -237,7 +245,7 @@ def model(phi, a, c, d):
 
 def fit_model(phi, incl):
     # These initial values don't seem to matter much
-    a0 = 0.03
+    a0 = 0
     c0 = 0
     d0 = 0
 
@@ -282,11 +290,25 @@ def plot_incl_time(t, roll, pitch, filtered_roll, filtered_pitch):
     plt.show()
 
 
-def remove_reg_mean_incl(roll, pitch, reg_incl_file):
-    _, reg_roll, reg_pitch = get_incl(reg_incl_file)
-
+def remove_reg_mean_incl(roll, pitch, reg_roll, reg_pitch):
     roll = roll - np.mean(reg_roll)
     pitch = pitch - np.mean(reg_pitch)
+
+    return roll, pitch
+
+
+def remove_reg_trend_incl(phi, roll, pitch, reg_phi, reg_roll, reg_pitch):
+    # Model the cyclical trend in the registration inclination data
+    roll_params = fit_model(reg_phi, reg_roll)
+    pitch_params = fit_model(reg_phi, reg_pitch)
+
+    # Modeled registration roll and pitch at phi values
+    roll_modeled = model(phi, roll_params[0], roll_params[1], roll_params[2])
+    pitch_modeled = model(phi, pitch_params[0], pitch_params[1], pitch_params[2])
+
+    # Remove modeled trend
+    roll -= roll_modeled
+    pitch -= pitch_modeled
 
     return roll, pitch
 
@@ -301,3 +323,150 @@ def sop_pop_cloud(x, y, z, mat_file):
     z_rot = xyz_rot[:,2]
 
     return x_rot, y_rot, z_rot
+
+
+def save_incl(t, roll, pitch, data_dir, root, ext):
+    outfilename = data_dir + "/" + root + ext
+    np.savetxt(
+        outfilename,
+        np.column_stack((t, roll, pitch)),
+        "%0.4f",
+        delimiter=',',
+        header="Time,Roll,Pitch"
+    )
+
+
+def no_adj(t, x, y, z, georef, sop_file, pop_file, data_dir, root):
+    # Save points
+    if georef:
+        xg, yg, zg = sop_pop_cloud(x, y, z, sop_file)
+        xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+        outfilename = data_dir + "/" + root + "-utm.laz"
+        save_utm(outfilename, t, xg, yg, zg)
+    else:
+        outfilename = data_dir + "/" + root + "-socs.laz"
+        save_pnts(outfilename, t, x, y, z)
+
+
+def warp_adj(t, x, y, z, it, roll, pitch, 
+             georef, sop_file, pop_file, data_dir, root):
+    # Noise filter
+    filtered_roll = filter_incl(roll)
+    filtered_pitch = filter_incl(pitch)
+
+    # Apply inclination
+    xw, yw, zw = warp_cloud(
+        t, x, y, z,
+        it, filtered_roll, filtered_pitch
+    )
+
+    # Save warped points
+    if georef:
+        xg, yg, zg = sop_pop_cloud(xw, yw, zw, sop_file)
+        xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+        outfilename = data_dir + "/" + root + "-warped-utm.laz"
+        save_utm(outfilename, t, xg, yg, zg)
+    else:
+        outfilename = data_dir + "/" + root + "-warped-socs.laz"
+        save_pnts(outfilename, t, xw, yw, zw)
+    
+    # Save filtered inclination
+    ext = "-incl-filtered.txt"
+    save_incl(it, filtered_roll, filtered_pitch, data_dir, root, ext)
+
+
+def mr_warp_adj(t, x, y, z, it, roll, pitch,
+                reg_roll, reg_pitch,
+                georef, sop_file, pop_file, data_dir, root):
+    # Remove MSA registration scan mean inclination
+    mr_roll, mr_pitch = remove_reg_mean_incl(roll, pitch, reg_roll, reg_pitch)
+
+    # Noise filter
+    filtered_mr_roll = filter_incl(mr_roll)
+    filtered_mr_pitch = filter_incl(mr_pitch)
+
+    # Apply inclination
+    xw, yw, zw = warp_cloud(
+        t, x, y, z,
+        it, filtered_mr_roll, filtered_mr_pitch
+    )
+
+    # Save warped points
+    if georef:
+        xg, yg, zg = sop_pop_cloud(xw, yw, zw, sop_file)
+        xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+        outfilename = data_dir + "/" + root + "-regmeanrem-warped-utm.laz"
+        save_utm(outfilename, t, xg, yg, zg)
+    else:
+        outfilename = data_dir + "/" + root + "-regmeanrem-warped-socs.laz"
+        save_pnts(outfilename, t, xw, yw, zw)
+
+    # Save modified and filtered modified inclination
+    ext = "-incl-regmeanrem.txt"
+    save_incl(it, mr_roll, mr_pitch, data_dir, root, ext)
+    ext = "-incl-regmeanrem-filtered.txt"
+    save_incl(it, filtered_mr_roll, filtered_mr_pitch, data_dir, root, ext)
+
+
+def tr_warp_adj(t, x, y, z, it, phi, roll, pitch,
+                reg_phi, reg_roll, reg_pitch,
+                georef, sop_file, pop_file, data_dir, root):
+    # Remove MSA registration scan inclination cyclical trends
+    tr_roll, tr_pitch = remove_reg_trend_incl(phi, roll, pitch,
+                                              reg_phi, reg_roll, reg_pitch)
+
+    # Noise filter
+    filtered_tr_roll = filter_incl(tr_roll)
+    filtered_tr_pitch = filter_incl(tr_pitch)
+
+    # Apply inclination
+    xw, yw, zw = warp_cloud(
+        t, x, y, z,
+        it, filtered_tr_roll, filtered_tr_pitch
+    )
+    
+    # Save warped points
+    if georef:
+        xg, yg, zg = sop_pop_cloud(xw, yw, zw, sop_file)
+        xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+        outfilename = data_dir + "/" + root + "-regtrendrem-warped-utm.laz"
+        save_utm(outfilename, t, xg, yg, zg)
+    else:
+        outfilename = data_dir + "/" + root + "-regtrendrem-warped-socs.laz"
+        save_pnts(outfilename, t, xw, yw, zw)
+
+    # Save modified and filtered modified inclination
+    ext = "-incl-regtrendrem.txt"
+    save_incl(it, tr_roll, tr_pitch, data_dir, root, ext)
+    ext = "-incl-regtrendrem-filtered.txt"
+    save_incl(it, filtered_tr_roll, filtered_tr_pitch, data_dir, root, ext)
+
+
+def mr_rotate_adj(t, x, y, z, it, roll, pitch,
+                  reg_roll, reg_pitch,
+                  georef, sop_file, pop_file, data_dir, root):
+    # Remove MSA registration scan mean inclination
+    mr_roll, mr_pitch = remove_reg_mean_incl(roll, pitch, reg_roll, reg_pitch)
+
+    # Mean inclination
+    mean_mr_roll = np.mean(mr_roll)
+    mean_mr_pitch = np.mean(mr_pitch)
+
+    # Apply inclination
+    xr, yr, zr = rotate_cloud(x, y, z, mr_roll, mr_pitch, mode='mean')
+
+    # Save rotated points
+    if georef:
+        xg, yg, zg = sop_pop_cloud(xr, yr, zr, sop_file)
+        xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+        outfilename = data_dir + "/" + root + "-regmeanrem-meanrotated-utm.laz"
+        save_utm(outfilename, t, xg, yg, zg)
+    else:
+        outfilename = data_dir + "/" + root + "-regmeanrem-meanrotated-socs.laz"
+        save_pnts(outfilename, t, xr, yr, zr)
+
+    # Save modified and mean modified inclination
+    ext = "-incl-regmeanrem.txt"
+    save_incl(it, mr_roll, mr_pitch, data_dir, root, ext)
+    ext = "-incl-regmeanrem-mean.txt"
+    save_incl(0, mean_mr_roll, mean_mr_pitch, data_dir, root, ext)
