@@ -65,10 +65,10 @@ You can download sample data from [here](https://uofh-my.sharepoint.com/:f:/g/pe
 - Note that the proposed method does not eliminate the vertical discrepancy; it is only able to remove a large portion of it.
 
 _180804 - Exposed Rock - All 4 Scans_
-![](/images/profiles/180804-4scans-1.png)
+![](./images/profiles/180804-4scans-1.png)
 
 
 _180804 - Exposed Rock - All 4 Scans_
-![](/images/profiles/180804-4scans-2.png)
+![](./images/profiles/180804-4scans-2.png)
 
 
