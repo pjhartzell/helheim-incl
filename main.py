@@ -6,11 +6,11 @@ from incl import *
 
 # ------------------------------------------------------------------------------
 # Directory containing the LAZ and inclination TXT files
-data_dir = "/mnt/e/ATLAS/north_180801-180807/mta"
-sop_file = "/mnt/e/ATLAS/registration/sop_pop/ATLAS-North-201807-SOP.dat"
-pop_file = "/mnt/e/ATLAS/registration/sop_pop/ATLAS-POP.dat"
-reg_pnts_file = "/mnt/e/ATLAS/registration/scans/msa/north/180730_223212-mta.laz"
-reg_incl_file = "/mnt/e/ATLAS/registration/scans/msa/north/180730_223212-mta-incl.txt"
+data_dir = "E:/ATLAS/south_200501-200515/mta"
+sop_file = "E:/ATLAS/registration/sop_pop/ATLAS-South-201908-SOP.dat"
+pop_file = "E:/ATLAS/registration/sop_pop/ATLAS-POP.dat"
+reg_pnts_file = "E:/ATLAS/registration/scans/msa/south/190804_153929-mta.laz"
+reg_incl_file = "E:/ATLAS/registration/scans/msa/south/190804_153929-mta-incl.txt"
 
 # Inclination application options. Any option set to 'True' will result in a LAZ
 # file for that option being created.
@@ -42,7 +42,7 @@ if tr_warp:
 laz_files = [f for f in os.listdir(data_dir) if f.endswith(".laz")]
 for laz_file in laz_files:
     gc.collect()
-
+    
     # MTA'd, unfiltered LAZ file in SOCS and corresponding inclination file
     laz_file = data_dir + "/" + laz_file
     root, _ = os.path.splitext(os.path.basename(laz_file))
