@@ -10,10 +10,10 @@ Point clouds from the same scanner do not vertically align on stationary (expose
 The general concept is to apply the roll and pitch angles that are supplied by the scanner inclination sensors to each point cloud. We have experimented with rigid point cloud rotations, based on single mean roll and pitch values, and non-rigid point cloud transformations, where each point is rotated according to the closest roll and pitch values in time. The roll and pitch signals are low-passed prior to the non-rigid transformations. Two examples of raw and low-passed roll and pitch signals from ATLAS South scans are shown below.
 
 _180804_010156 - Filtered Roll and Pitch (0100 local time)_
-![](images/filteredrollpitch-south-180804_010156.png)
+![](images/inclination/filteredrollpitch-south-180804_010156.png)
 
 _180804_190154 - Filtered Roll and Pitch (1900 local time)_
-![](images/filteredrollpitch-south-180804_190154.png)
+![](images/inclination/filteredrollpitch-south-180804_190154.png)
 
 In order of typical magnitude, these roll and pitch inclination signals consist of the following:
 
@@ -26,13 +26,13 @@ Given the presence of cyclical sensor error, applying the non-rigid transformati
 We address the problem of "double" inclination application by removing either the mean or modeled cyclical component of the scan used to solve the SOP matrix, which is the scan used in the MSA registration. This produces much better alignment in the final UTM coordinate system between overlapping North and South scan data on stationary (exposed rock) surfaces. Qualitatively, it appears that a non-rigid transformation using inclination signals that have had the modeled cyclical component of the MSA registration scan removed produce the most improvement in relative inter-scan alignment throughout the point cloud. Note that the cyclical component is modeled with a sine wave having a period of phi=360°, where phi is the horizontal scan angle. An example of the cyclical model (from the MSA scan corresponding to the filtered signals shown above) and this model subsequently removed from the roll and pitch signals shown above are given below.
 
 _180731_010159 - MSA Scan Modeled Roll and Pitch_
-![](images/modeledrollpitch-south-180731_010159-msascan.png)
+![](images/inclination/modeledrollpitch-south-180731_010159-msascan.png)
 
 _180804_010156 - Model Removed, Filtered Roll and Pitch (Scan is at same time of day as MSA scan)_
-![](images/modelremoved-filteredrollpitch-south-180804_010156.png)
+![](images/inclination/modelremoved-filteredrollpitch-south-180804_010156.png)
 
 _180804_190154 - Model Removed, Filtered Roll and Pitch (Scan is at different time of day as MSA scan)_
-![](images/modelremoved-filteredrollpitch-south-180804_190154.png)
+![](images/inclination/modelremoved-filteredrollpitch-south-180804_190154.png)
 
 Notes:
 - The cyclical model fit is degraded by any intra-scan motion present in the SOP MSA scans. It appears that the early morning (0100 local time) scans tend to be well-behaved with respect to the cyclical model. Thus, these 0100 local time scans should be preferred for future MSA adjustments, as they may suffer less intra-scan motion than late day scans.
@@ -65,10 +65,10 @@ You can download sample data from [here](https://uofh-my.sharepoint.com/:f:/g/pe
 - Note that the proposed method does not eliminate the vertical discrepancy; it is only able to remove a large portion of it.
 
 _180804 - Exposed Rock - All 4 Scans_
-![](images/180804-4scans-1.png)
+![](images/profiles/180804-4scans-1.png)
 
 
 _180804 - Exposed Rock - All 4 Scans_
-![](images/180804-4scans-2.png)
+![](images/profiles/180804-4scans-2.png)
 
 
