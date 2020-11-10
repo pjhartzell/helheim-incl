@@ -44,14 +44,8 @@ You will need a directory containing MTA'd RXP files.
 
 1. Build and install Pete's [rivlib-utils](https://github.com/gadomski/rivlib-utils) on your machine. Change the `false` argument to `true` on line #10 in the source file `inclination.cpp` before building. This changes the timestamps from internal time to GPS time.
 2. Copy the `rxp2incl.sh` script to your MTA directory and run to extract inclination data from the RXP files. Text files containing time, roll, and pitch (units are GPS time seconds and degrees) will be saved into the RXP directory with "-incl" appended to the source RXP filenames.
-2. Copy the `rxp2laz.sh` script to your MTA directory and run to extract and save point cloud data from the MTA RXP files. You will need PDAL with the RXP reader plugin.
-3. Edit the user input at the top of the `main.py` script and run to apply the inclination data to the point cloud data. New point cloud LAZ files will be create with appropriate filenames. You can choose to do one or more of the following:
-    - Not apply any inclination data.
-    - Warp the point clouds with the inclination data.
-    - Warp the point clouds with mean-removed inclination data.
-    - Warp the point clouds with trend-removed inclination data, where the "trend" is the cyclical model.
-    - Rigidly rotate the point clouds using the mean of the mean-removed inclination data.
-    - Optionally georeference the output of the above adjustments to UTM.
+3. Copy the `rxp2laz.sh` script to your MTA directory and run to extract and save point cloud data from the MTA RXP files. You will need PDAL with the RXP reader plugin.
+4. Edit the user input at the top of the `main.py` script and run to apply the inclination files created in step #2 above to the LAZ files created in step #3 above. Prior to application of the inclination data, the trend of the SOP MSA scan inclination is first removed. New point cloud LAZ files will be created with the coordinates in UTM.
 
 
 ## 4. Sample Result Data
