@@ -6,7 +6,7 @@ A script to apply scanner inclination data to ATLAS North and South point clouds
 Point clouds from the same scanner do not vertically align on stationary (exposed rock) surfaces. The alignment differences are greater at longer ranges, suggesting non-stationary scanner orientation.
 
 
-## 2. Mitigation Approaches
+## 2. Mitigation Approach
 The general concept is to apply the roll and pitch angles that are supplied by the scanner inclination sensors to each point cloud. We have experimented with rigid point cloud rotations, based on single mean roll and pitch values, and non-rigid point cloud transformations, where each point is rotated according to the closest roll and pitch values in time. The roll and pitch signals are low-passed prior to the non-rigid transformations. Two examples of raw and low-passed roll and pitch signals from ATLAS South scans are shown below.
 
 _180804_010156 - Filtered Roll and Pitch (0100 local time)_
@@ -23,7 +23,7 @@ In order of typical magnitude, these roll and pitch inclination signals consist 
 
 Given the presence of cyclical sensor error, applying the non-rigid transformation will introduce a vertical "wave" into the point cloud. Single rigid rotations, on the other hand, ignore intra-scan inclination changes. In either case, the inclination must be applied to point clouds in the SOCS system. Doing so, however, invalidates the SOP matrix, since the SOP matrix itself is based on a scan with similar inclination values. Thus, applying the SOP matrix after applying the inclination data results in a (roughly) double application of the inclination data.
 
-We address the problem of "double" inclination application by removing either the mean or modeled cyclical component of the scan used to solve the SOP matrix, which is the scan used in the MSA registration. This produces much better alignment in the final UTM coordinate system between overlapping North and South scan data on stationary (exposed rock) surfaces. Qualitatively, it appears that a non-rigid transformation using inclination signals that have had the modeled cyclical component of the MSA registration scan removed produce the most improvement in relative inter-scan alignment throughout the point cloud. Note that the cyclical component is modeled with a sine wave having a period of phi=360°, where phi is the horizontal scan angle. An example of the cyclical model (from the MSA scan corresponding to the filtered signals shown above) and this model subsequently removed from the roll and pitch signals shown above are given below.
+We address the problem of "double" inclination application by removing either the mean or modeled cyclical component of the scan used to solve the SOP matrix, which is the scan used in the MSA registration. This produces much better alignment in the final UTM coordinate system between overlapping North and South scan data on stationary (exposed rock) surfaces. Qualitatively, it appears that a non-rigid transformation using inclination signals that have had the modeled cyclical component of the MSA registration scan removed produce the most improvement in relative inter-scan alignment throughout the point cloud. Note that the cyclical component is modeled with a sine wave having a period of phi=360°, where phi is the horizontal scan angle. An example of the cyclical model (applied to the MSA scan corresponding to the filtered signals shown above) and this model subsequently removed from the above roll and pitch signals are shown below.
 
 _180731_010159 - MSA Scan Modeled Roll and Pitch_
 ![](images/inclination/modeledrollpitch-south-180731_010159-msascan.png)
@@ -35,8 +35,8 @@ _180804_190154 - Model Removed, Filtered Roll and Pitch (Scan is at different ti
 ![](images/inclination/modelremoved-filteredrollpitch-south-180804_190154.png)
 
 Notes:
-- The cyclical model fit is degraded by any intra-scan motion present in the SOP MSA scans. It appears that the early morning (0100 local time) scans tend to be well-behaved with respect to the cyclical model. Thus, these 0100 local time scans should be preferred for future MSA adjustments, as they may suffer less intra-scan motion than late day scans.
-- The low-pass filter size is based on prior work with the Arapahoe Basin data. Qualitative inspection suggests it may be over-smoothing the signal, thus reducing the effectiveness of the warp correction. However, finding the optimal filter size is likely an empirical exercise and may also depend on environmental conditions (e.g., wind speed). For now, the filter is believed to be conservative, and we prefer to err on the side of not injecting noise into the point cloud.
+- The cyclical model fit is degraded by any intra-scan motion present in the SOP MSA scans. It appears that the early morning (0100 local time) scans tend to be well-behaved with respect to the cyclical model. Thus, these 0100 local time scans should, perhaps, be preferred for future MSA adjustments, as they may suffer less intra-scan motion than late day scans.
+- The low-pass filter size is based on prior work with the Arapahoe Basin TLS data. Qualitative inspection suggests it may be over-smoothing the signal, thus reducing the effectiveness of the warp correction at small scales. For now, the filter is believed to be conservative, and we prefer to err on the side of not injecting noise into the point cloud.
 
 
 ## 3. Use
@@ -65,9 +65,12 @@ You can download sample data from [here](https://uofh-my.sharepoint.com/:f:/g/pe
 - Note that the proposed method does not eliminate the vertical discrepancy; it is only able to remove a large portion of it.
 
 _180804 - Exposed Rock - All 4 Scans_
-![](./images/profiles/180804-4scans-1.png)
+![](images/profiles/180804-4scans-1.jpg)
 
 _180804 - Exposed Rock - All 4 Scans_
-![](./images/profiles/180804-4scans-2.png)
+![](images/profiles/180804-4scans-2.jpg)
 
 
+## 6. To-Do
+
+Thus far, the approach has been evaluated from the perspective how well it works. We need to develop systematic post-adjustment analyses to quantify the effectiveness and to identify where it performs poorly.
