@@ -1,1 +1,0 @@
-1. Only time, x, y, and z are being ingested with the read_pnts function. This needs to be changed to read in all dimensions so they can be saved with the adjusted xyz coordinates in the save_pnts function.

@@ -1,0 +1,24 @@
+[
+    {
+    "scanner": {
+        "name": "South",
+        "ranges": [
+            ["150728_180208", "160808_180214", "ATLAS-South-201507-SOP.dat"],
+            ["160811_173200", "161008_060205", "ATLAS-South-201608-SOP.dat"],
+            ["170717_180200", "171207_120907", "ATLAS-South-201708-SOP.dat"],
+            ["180727_220154", "190804_070155", "ATLAS-South-201807-SOP.dat"]
+        ],
+        "default": "ATLAS-South-201908-SOP.dat"
+        }
+    },
+    {
+    "scanner": {
+        "name": "North",
+        "ranges": [
+            ["180731_110237", "180928_180240", "ATLAS-North-201807-SOP.dat "]
+        ],
+        "default": "ATLAS-North-201908-SOP.dat"
+        }
+    },
+    {"POP":"ATLAS-POP.dat"}
+]

@@ -16,14 +16,9 @@ def get_pnts(filename):
     p.validate()
     p.execute()
     arrays = p.arrays
-    view = arrays[0]
+    array = arrays[0]
 
-    t = view['GpsTime']
-    x = view['X']
-    y = view['Y']
-    z = view['Z']
-
-    return t, x, y, z
+    return array
 
 
 def get_incl(filename):
@@ -98,14 +93,7 @@ def warp_cloud(pt, x, y, z, it, roll, pitch):
     return x_rot, y_rot, z_rot
 
 
-def save_utm(filename, t, x, y, z):
-    out_type = np.dtype([('GpsTime', t.dtype), ('X', x.dtype), ('Y', y.dtype), ('Z', z.dtype)])
-    out = np.empty(len(t), dtype=out_type)
-    out['GpsTime'] = t
-    out['X'] = x
-    out['Y'] = y
-    out['Z'] = z
-
+def save_utm(filename, array):
     pdal_pipe = [
         {
             "type":"filters.reprojection",
@@ -117,8 +105,7 @@ def save_utm(filename, t, x, y, z):
             "filename":filename
         }
     ]
-
-    p = pdal.Pipeline(json=json.dumps(pdal_pipe), arrays=[out,])
+    p = pdal.Pipeline(json=json.dumps(pdal_pipe), arrays=[array,])
     p.validate()
     p.execute()
 
@@ -192,11 +179,11 @@ def save_incl(t, roll, pitch, data_dir, root, ext):
     )
 
 
-def tr_warp_adj(t, x, y, z, it, roll, pitch,
+def tr_warp_adj(array, it, roll, pitch,
                 msa_roll_params, msa_pitch_params,
                 sop_file, pop_file, data_dir, basename):
     # Compute scan phi (horizontal) angle
-    phi = get_phi(it, t, x, y)
+    phi = get_phi(it, array["GpsTime"], array["X"], array["Y"])
 
     # Remove MSA registration scan inclination cyclical trends
     tr_roll, tr_pitch = remove_reg_trend_incl(phi, roll, pitch,
@@ -208,26 +195,36 @@ def tr_warp_adj(t, x, y, z, it, roll, pitch,
 
     # Apply inclination
     xw, yw, zw = warp_cloud(
-        t, x, y, z,
+        array["GpsTime"], array["X"], array["Y"], array["Z"],
         it, filtered_tr_roll, filtered_tr_pitch
     )
     
     # Save warped points
-    xg, yg, zg = sop_pop_cloud(xw, yw, zw, sop_file)
-    xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+    x, y, z = sop_pop_cloud(xw, yw, zw, sop_file)
+    x, y, z = sop_pop_cloud(x, y, z, pop_file)
+
+    array["X"] = x
+    array["Y"] = y
+    array["Z"] = z
+
     outfilename = data_dir + "/" + basename + "-msatrendrem-warped-utm.laz"
-    save_utm(outfilename, t, xg, yg, zg)
+    save_utm(outfilename, array)
  
-    # Save modified and filtered modified inclination
+    # Save detrended and filtered detrended inclination
     ext = "-incl-msatrendrem.txt"
     save_incl(it, tr_roll, tr_pitch, data_dir, basename, ext)
     ext = "-incl-msatrendrem-filtered.txt"
     save_incl(it, filtered_tr_roll, filtered_tr_pitch, data_dir, basename, ext)
 
 
-def no_adj(t, x, y, z, sop_file, pop_file, data_dir, basename):
+def no_adj(array, sop_file, pop_file, data_dir, basename):
     # Save points in UTM
-    xg, yg, zg = sop_pop_cloud(x, y, z, sop_file)
-    xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+    x, y, z = sop_pop_cloud(array["X"], array["Y"], array["Z"], sop_file)
+    x, y, z = sop_pop_cloud(x, y, z, pop_file)
+
+    array["X"] = x
+    array["Y"] = y
+    array["Z"] = z
+
     outfilename = data_dir + "/" + basename + "-utm.laz"
-    save_utm(outfilename, t, xg, yg, zg)
+    save_utm(outfilename, array)
