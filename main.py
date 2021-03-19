@@ -7,12 +7,12 @@ from incl import *
 #   LAZ files generated from the MTA'd RXP files; Must be in SOCS
 #   TXT files generated from the MTA'd RXP files
 # The directory contents must be associated with only one SOP matrix.
-data_dir = "/mnt/e/ATLAS/south_200501-200515/mta"
+data_dir = "/mnt/d/ATLAS/south_190624-190628/mta"
 # Required supporting data
-sop_file = "/mnt/e/ATLAS/registration/sop_pop/ATLAS-South-201908-SOP.dat"
-pop_file = "/mnt/e/ATLAS/registration/sop_pop/ATLAS-POP.dat"
-msa_pnts_file = "/mnt/e/ATLAS/registration/scans/msa/south/190804_153929-mta.laz"
-msa_incl_file = "/mnt/e/ATLAS/registration/scans/msa/south/190804_153929-mta-incl.txt"
+sop_file = "/mnt/d/ATLAS/registration/sop_pop/ATLAS-South-201807-SOP.dat"
+pop_file = "/mnt/d/ATLAS/registration/sop_pop/ATLAS-POP.dat"
+msa_pnts_file = "/mnt/d/ATLAS/registration/scans/msa/south/180731_010159-mta.laz"
+msa_incl_file = "/mnt/d/ATLAS/registration/scans/msa/south/180731_010159-mta-incl.txt"
 # ------------------------------------------------------------------------------
 
 
@@ -37,7 +37,10 @@ for laz_file in laz_files:
     t, x, y, z = get_pnts(laz_file)
     it, roll, pitch = get_incl(incl_file)
 
-    # Adjust points
+    # Convert points to UTM, save
+    no_adj(t, x, y, z, sop_file, pop_file, data_dir, basename)
+
+    # Adjust points, convert to UTM, save
     tr_warp_adj(t, x, y, z, it, roll, pitch,
                 msa_roll_params, msa_pitch_params,
                 sop_file, pop_file, data_dir, basename)

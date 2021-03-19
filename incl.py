@@ -224,3 +224,10 @@ def tr_warp_adj(t, x, y, z, it, roll, pitch,
     ext = "-incl-msatrendrem-filtered.txt"
     save_incl(it, filtered_tr_roll, filtered_tr_pitch, data_dir, basename, ext)
 
+
+def no_adj(t, x, y, z, sop_file, pop_file, data_dir, basename):
+    # Save points in UTM
+    xg, yg, zg = sop_pop_cloud(x, y, z, sop_file)
+    xg, yg, zg = sop_pop_cloud(xg, yg, zg, pop_file)
+    outfilename = data_dir + "/" + basename + "-utm.laz"
+    save_utm(outfilename, t, xg, yg, zg)
